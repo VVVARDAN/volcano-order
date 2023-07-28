@@ -1,4 +1,3 @@
-
 apiVersion: batch.volcano.sh/v1alpha1
 
 
@@ -17,9 +16,6 @@ spec:
   tasks:
     - replicas: 1
       name: master
-      #policies:
-       # - event: TaskCompleted
-          #action: CompleteJob
       template:
         spec:
           containers:
