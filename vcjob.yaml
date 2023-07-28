@@ -1,0 +1,71 @@
+
+apiVersion: batch.volcano.sh/v1alpha1
+
+
+kind: Job
+metadata:
+  name: job-test-v506
+  annotations:
+    volcano.sh/task-topology-task-order: "master,worker"
+    volcano.sh/task-topology-anti-affinity:  "master,worker"
+spec:
+  minAvailable: 4
+  schedulerName: volcano
+  policies:
+    - event: PodEvicted
+      action: RestartJob
+  tasks:
+    - replicas: 1
+      name: master
+      #policies:
+       # - event: TaskCompleted
+          #action: CompleteJob
+      template:
+        spec:
+          containers:
+            - command:
+                - sleep
+                - 0.2m
+              image: nginx:latest
+              name: nginx
+              resources:
+                requests:
+                  memory: "50Mi"
+                  cpu: 1
+                limits:
+                  memory: "100Mi"
+                  cpu: 1
+          restartPolicy: Never
+    - replicas: 3
+      name: worker
+      policies:
+        - event: TaskCompleted
+          action: CompleteJob
+      template:
+        spec:
+          initContainers:
+            - image: my_init:latest
+              name: "myinit"
+              imagePullPolicy: Never
+              command:
+                - sleep
+                - 0.01m
+              # TODO
+              # env:
+              #   - name: PARAMS
+              #     value: "param1 param2 param3"
+
+          containers:
+            - command:
+                - sleep
+                - 0.2m
+              image: nginx:latest
+              name: nginx
+              resources:
+                requests:
+                  memory: "5Mi"
+                  cpu: 1
+                limits:
+                  memory: "10Mi"
+                  cpu: 1
+          restartPolicy: Never
